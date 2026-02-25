@@ -10,8 +10,8 @@ from apify_client import ApifyClient
 # ==========================================
 # 🔑 安全設定區 (從 Secrets 讀取)
 # ==========================================
-GEMINI_API_KEY = "AIzaSyAiPm5hgvnq_mE4LhXTopi62jAyvSMJffI"
-APIFY_TOKEN = "apify_api_AU4czPQnxXCoQ2Nz0aYB3YWlWWKA333MEFhK" # 👈 這裡填入剛剛複製的 apify_api_...
+GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+APIFY_TOKEN = st.secrets["APIFY_TOKEN"]
 MODEL_NAME = "gemini-3.0-flash"
 
 # ==========================================
@@ -142,3 +142,4 @@ if st.button("🚀 開始精準大數據分析", type="primary"):
                 hide_index=True
 
             )
+
