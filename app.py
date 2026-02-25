@@ -1,15 +1,22 @@
+import streamlit as st
+import time
+import json
+import requests
+import re
+import pandas as pd
+from datetime import datetime, timedelta
+from apify_client import ApifyClient
+
 # ==========================================
-# 🔑 安全設定區 (雲端版)
+# 🔑 安全設定區 (從 Secrets 讀取)
 # ==========================================
-# 這裡改成從 Streamlit 系統後台讀取，不要直接寫死密碼
 GEMINI_API_KEY = "AIzaSyAiPm5hgvnq_mE4LhXTopi62jAyvSMJffI"
 APIFY_TOKEN = "apify_api_AU4czPQnxXCoQ2Nz0aYB3YWlWWKA333MEFhK" # 👈 這裡填入剛剛複製的 apify_api_...
 MODEL_NAME = "gemini-3.0-flash"
 
 # ==========================================
 
-st.set_page_config(page_title="Threads 大數據監測 V8.3", page_icon="📊", layout="wide")
-
+st.set_page_config(page_title="Threads 大數據監測 V8.5", page_icon="📊", layout="wide")
 def scrape_threads_massive(keyword, max_posts, exclude_words_str, date_range):
     client = ApifyClient(APIFY_TOKEN)
     fetch_count = int(max_posts * 2)
@@ -133,4 +140,5 @@ if st.button("🚀 開始精準大數據分析", type="primary"):
                 },
                 use_container_width=True,
                 hide_index=True
+
             )
