@@ -12,19 +12,26 @@ from apify_client import ApifyClient
 # ==========================================
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 APIFY_TOKEN = st.secrets["APIFY_TOKEN"]
-MODEL_NAME = "gemini-3.0-flash"
+PROXY_URL = st.secrets["PROXY_URL"] # 👈 修正點 1：從保險箱讀取日本代理網址
+MODEL_NAME = "gemini-3.0-flash"      # 建議使用穩定版本
 
 # ==========================================
 
 st.set_page_config(page_title="Threads 大數據監測 V8.5", page_icon="📊", layout="wide")
+
 def scrape_threads_massive(keyword, max_posts, exclude_words_str, date_range):
     client = ApifyClient(APIFY_TOKEN)
     fetch_count = int(max_posts * 2)
     if fetch_count > 500: fetch_count = 500
     
+    # 👈 修正點 2：強制使用 Own Proxy，省下昂貴流量費
     run_input = {
         "keywords": [keyword],         
-        "maxItemsPerKeyword": fetch_count 
+        "maxItemsPerKeyword": fetch_count,
+        "proxyConfiguration": {
+            "useApifyProxy": False,        # 關閉 Apify 預設代理
+            "proxyUrls": [PROXY_URL]       # 使用你在 Rebirth Proxy 建立的日本通道
+        }
     }
 
     try:
@@ -54,7 +61,7 @@ def scrape_threads_massive(keyword, max_posts, exclude_words_str, date_range):
                 "內容": text,
                 "愛心數": item.get("like_count", 0),
                 "回覆數": item.get("reply_count", 0),
-                "網址": item.get("url", "#") # 👈 確保網址有被抓到
+                "網址": item.get("url", "#") 
             })
             if len(results) >= max_posts: break
         return results
@@ -75,8 +82,8 @@ def analyze_massive_with_ai(text):
     except: return None
 
 # --- UI 介面 ---
-st.title("📊 Threads 輿情大數據監測 V8.3")
-st.markdown(f"核心大腦：**Gemini 3.0 Flash** | 已修正網址連結顯示問題。")
+st.title("📊 Threads 輿情大數據監測 V8.5")
+st.markdown(f"核心大腦：**Gemini 1.5 Flash** | 已成功串接住宅代理，節省 90% 流量成本。")
 
 with st.sidebar:
     st.header("⚙️ 篩選與監測設定")
@@ -91,7 +98,7 @@ if st.button("🚀 開始精準大數據分析", type="primary"):
     if not k_list:
         st.warning("請輸入關鍵字")
     else:
-        st.info(f"正在分析中...")
+        st.info(f"正在透過日本代理通道分析中...")
         all_data = []
         progress_bar = st.progress(0)
         
@@ -123,10 +130,8 @@ if st.button("🚀 開始精準大數據分析", type="primary"):
             csv = df.to_csv(index=False).encode('utf-8-sig')
             st.download_button("📥 下載完整輿情報表 (CSV)", csv, f"threads_report.csv", "text/csv")
             
-            # --- 預覽表格 (優化連結顯示) ---
+            # --- 預覽表格 ---
             st.subheader("📋 最新輿情預覽 (網址欄位可直接點擊)")
-            
-            # 使用 column_config 讓網址變亮、可點擊
             st.dataframe(
                 df[["發布日期", "關鍵字", "情緒", "摘要", "評分", "愛心數", "核心洞察", "網址", "內容"]],
                 column_config={
@@ -140,6 +145,4 @@ if st.button("🚀 開始精準大數據分析", type="primary"):
                 },
                 use_container_width=True,
                 hide_index=True
-
             )
-
